@@ -3,7 +3,7 @@
    <ns0:Body>
       <ns1:OpoRoib>
          
-         <ns1:hazardousObjectRoib RoibOpoValue="1.0" RoibOpoDateTime="2022-04-12T09:36:50.349273" RoibOpoDescription="Работа штатно" HazardousObjectNumber="А38-00001-3001" RequestGuid="b1cd98eb-62a9-46e0-827b-d05e6a39d07d" Ogrn="1023001538460" ID="1">
+         <ns1:hazardousObjectRoib RoibOpoValue="1.0" RoibOpoDateTime="2022-04-15T14:25:27.814507" RoibOpoDescription="Работа штатно" HazardousObjectNumber="А38-00001-3001" RequestGuid="b1cd98eb-62a9-46e0-827b-d05e6a39d07d" Ogrn="1023001538460" ID="1">
             
             <ns1:Signature>
                

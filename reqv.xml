@@ -1,25 +1,10 @@
-import os, sys
-import xml.etree.ElementTree as ET
-from xml.etree import ElementTree
-from datetime import datetime, timezone
-from requests.structures import CaseInsensitiveDict
-import uuid
 
-def creat_xml():
-
-
-    url = "https://www.w3schools.com/xml/tempconvert.asmx"
-
-    headers = CaseInsensitiveDict()
-    headers["Content-Type"] = "application/soap+xml"
-    i=1
-    data = """
    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sdk="sdkrtn">
    <soapenv:Header/>
       <soapenv:Body>
       <sdk:OpoRoib>
          <!--Optional:-->
-         <sdk:hazardousObjectRoib RoibOpoValue="{}" RoibOpoDateTime="{}" RoibOpoDescription="Низкий риск"  HazardousObjectNumber="А38-00001-3001" RequestGuid="{}" Ogrn="1023001538460" ID="1" >
+         <sdk:hazardousObjectRoib RoibOpoValue="1" RoibOpoDateTime="2022-04-15T16:26:04.148194+04:00" RoibOpoDescription="Низкий риск"  HazardousObjectNumber="А38-00001-3001" RequestGuid="0c6779ef-4f27-4af6-8903-c54fd4e82931" Ogrn="1023001538460" ID="1" >
             <!--Optional:-->
             <sdk:Signature>
                <!--Optional:-->
@@ -56,16 +41,4 @@ def creat_xml():
       </sdk:OpoRoib>
    </soapenv:Body>
     </soap12:Envelope>
-    """.format(i, datetime.now(timezone.utc).astimezone().isoformat(), uuid.uuid4())
-
-    # resp = requests.post(url, headers=headers, data=data)
-    with open('reqv.xml', 'w', encoding='utf-8') as f:
-     f.write(data)
-    print(data)
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    creat_xml()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    
