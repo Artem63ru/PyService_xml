@@ -4,7 +4,7 @@
       <soapenv:Body>
       <sdk:OpoRoib>
          <!--Optional:-->
-         <sdk:hazardousObjectRoib RoibOpoValue="1" RoibOpoDateTime="2022-04-15T16:26:04.148194+04:00" RoibOpoDescription="Низкий риск"  HazardousObjectNumber="А38-00001-3001" RequestGuid="0c6779ef-4f27-4af6-8903-c54fd4e82931" Ogrn="1023001538460" ID="1" >
+         <sdk:hazardousObjectRoib RoibOpoValue="1" RoibOpoDateTime="2022-10-30T09:51:11.066024+03:00" RoibOpoDescription="Низкий риск"  HazardousObjectNumber="А38-00001-3001" RequestGuid="deff8706-84f5-4e57-85c8-1db6c471aa96" Ogrn="1023001538460" ID="1" >
             <!--Optional:-->
             <sdk:Signature>
                <!--Optional:-->
