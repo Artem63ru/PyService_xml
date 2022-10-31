@@ -41,3 +41,25 @@ def sel_AE(guid_opo):
     cursor.execute(sql)
     for row in cursor:
         return row
+
+# Выбор Технологические блоки
+def sel_TB():
+    sql = 'select oto."descOTO", oto.guid from public.ref_oto oto'\
+    ' order by oto."idOTO"'\
+        'limit 1'
+    connect = connect_DB()
+    cursor = connect.cursor()
+    cursor.execute(sql)
+    for row in cursor:
+        return row
+
+# Выбор Технологические установки
+def sel_TU():
+    sql = 'select oto."descOTO", oto.guid from public.ref_oto oto'\
+    ' order by oto."idOTO"'\
+        'limit 1'
+    connect = connect_DB()
+    cursor = connect.cursor()
+    cursor.execute(sql)
+    for row in cursor:
+        return row

@@ -163,10 +163,6 @@ def creat_manualEvent_xml():
 # Частота передачи – 1 раз в сутки.
 def creat_opoRoib_xml():
     opo_Roib = DB_connect.sel_opo_Roib(Guid_OPO)
-    print(opo_Roib)
-    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
-    nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   # Вычисление времени с ТЗ для отображения когда произошло событие
-    print(nowTZ)
     sdk_opoRoib = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
     sdk_Header = ET.SubElement(sdk_opoRoib, ET.QName(SOAP_NS, 'Header'))
     sdk_Body = ET.SubElement(sdk_opoRoib, ET.QName(SOAP_NS, 'Body'))
@@ -179,11 +175,84 @@ def creat_opoRoib_xml():
                                    RoibOpoValue = str(opo_Roib[0]),            # Значение риск-ориентированного интегрального показателя промышленной безопасности ОПО
                                    RoibOpoDateTime = str(opo_Roib[1]),         # Дата и время, за которую предоставляются сведения расчета риск-ориентированного интегрального показателя промышленной безопасности ОПО
                                   )
-    xml_str = ET.tostring(sdk_opoRoib)
-    print(xml_str)
     tree = ET.ElementTree(sdk_opoRoib)
     try:
-            tree.write('out/opoRoib_' + now + '.xml', "UTF-8")
+            tree.write('out/opoRoib_' + str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")) + '.xml', "UTF-8")
+    except EnvironmentError as err:
+            print("{0}: import error: {1}".format(
+            os.path.basename(sys.argv[0]), err))
+            return False
+    return True
+
+
+# 8.1.5	8.1.3	Справочник «Технологические блоки»
+
+def creat_NewТеchBlock_xml():
+    TB = DB_connect.sel_TB()
+    sdk_NewТеchBlock = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
+    sdk_Header = ET.SubElement(sdk_NewТеchBlock, ET.QName(SOAP_NS, 'Header'))
+    sdk_Body = ET.SubElement(sdk_NewТеchBlock, ET.QName(SOAP_NS, 'Body'))
+    sdk_create_NewТеchBlock = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'CreateNewТеchBlock'))
+    sdk_create_obj = ET.SubElement(sdk_create_NewТеchBlock, ET.QName(SDK_NS, 'NewТеchBlock'),
+                                   GuidOPO = Guid_OPO,
+                                   Organization='faebb331-1927-491f-9635-64f1f1b5cd54')
+    sdk_TechBlocks = ET.SubElement(sdk_create_obj, ET.QName(SDK_NS, 'TechBlocks'),
+                                           Name=str(TB[0]),            # Полное наименование установки
+                                           Guid=str(TB[1]),           # GUID Технологического блока, присвоенный ДО
+                                           GuidInst='0A634505-5AF0-4275-8A8A-E50A16DA3F21'           # GUID Технологической установки, присвоенный ДО
+                                    )
+    tree = ET.ElementTree(sdk_NewТеchBlock)
+    try:
+            tree.write('out/NewТеchBlock' + str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")) + '.xml', "UTF-8")
+    except EnvironmentError as err:
+            print("{0}: import error: {1}".format(
+            os.path.basename(sys.argv[0]), err))
+            return False
+    return True
+
+
+# 8.1.5	Справочник «Технические устройства»
+# Таблица 23 – Параметры ответа запроса метода NewTechdevice
+
+def creat_NewTechdevice_xml():
+    # opo_Roib = DB_connect.sel_opo_Roib(Guid_OPO)
+    # print(opo_Roib)
+    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+    nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   # Вычисление времени с ТЗ для отображения когда произошло событие
+    print(nowTZ)
+    sdk_NewTechdevice = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
+    sdk_Header = ET.SubElement(sdk_NewTechdevice, ET.QName(SOAP_NS, 'Header'))
+    sdk_Body = ET.SubElement(sdk_NewTechdevice, ET.QName(SOAP_NS, 'Body'))
+    sdk_create_NewTechdevice = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'CreateNewTechdevice'))
+    sdk_create_obj = ET.SubElement(sdk_create_NewTechdevice, ET.QName(SDK_NS, 'createNewTechdevice'),
+                                   GuidOPO = Guid_OPO,
+                                   Organization='faebb331-1927-491f-9635-64f1f1b5cd54')
+    sdk_TechnicalDevices = ET.SubElement(sdk_create_obj, ET.QName(SDK_NS, 'TechnicalDevices'),
+                                           Name=str(Obj[1]),            # Полное наименование ТУ
+                                           Guid=str(Obj[10]),           # GUID ТУ, присвоенный ДО
+                                           GuidInst=str(Obj[10]),           # GUID Технологической установки, присвоенный ДО
+                                           GuidTB=str(Obj[10]),           # GUID Технологического блока, присвоенный ДО
+                                           LaunchDate=str(Obj[10]),           # Дата ввода в эксплуатацию
+                                           PbRegNum=str(Obj[10]),           # Регистрационный номер заключения экспертизы промышленной безопасности
+                                           PbIssueDate=str(Obj[10]),           # Дата заключения экспертизы промышленной безопасности
+                                           PbValidUntil=str(Obj[10]),           # Срок действия заключения экспертизы промышленной безопасности
+                                           PbState=str(Obj[10]),           # Код из справочника «Вывод о соответствии требованиям промышленной безопасности»
+                                           State=str(Obj[10]),           # Код из справочника «Текущее состояние»
+                                           OperationMode=str(Obj[10]),           # Код из справочника «Режим работы» (перечень в разделе 8.3.4)
+                                           LimitIrLow='1',
+                                           LimitIrNormal='0.8',
+                                           LimitIrHigh='0.6',
+                                           LimitIrMax='0.2',
+                                           limitTrendLow='1',
+                                           limitTrendNormal='0.8',
+                                           limitTrendHigh='0.5',
+                                           limitTrendMax='0.2',
+                                           )
+    xml_str = ET.tostring(sdk_NewTechdevice)
+    print(xml_str)
+    tree = ET.ElementTree(sdk_NewTechdevice)
+    try:
+            tree.write('out/NewTechdevice_' + now + '.xml', "UTF-8")
     except EnvironmentError as err:
             print("{0}: import error: {1}".format(
             os.path.basename(sys.argv[0]), err))
@@ -195,6 +264,7 @@ def creat_opoRoib_xml():
 if __name__ == '__main__':
     creat_opo_xml()
     creat_obj_xml()
+    creat_NewТеchBlock_xml()
     creat_automaticEvent_xml()
     creat_manualEvent_xml()
     creat_opoRoib_xml()
