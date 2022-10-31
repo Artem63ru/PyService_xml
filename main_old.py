@@ -94,7 +94,7 @@ def creat_obj_xml():
 # -	по событиям С3 – при фиксации события или смене статуса события;
 # -	по событиям С4 – не передается в рамках данного метода.
 def creat_automaticEvent_xml():
-    # Event = DB_connect.sel_obj(Guid_OPO)
+    Event = DB_connect.sel_AE(Guid_OPO)
     # print(Event)
     now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
     nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   #Вычисление времени с ТЗ для отображения когда произошло событие
@@ -102,13 +102,15 @@ def creat_automaticEvent_xml():
     sdk_automaticEvent = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
     sdk_Header = ET.SubElement(sdk_automaticEvent, ET.QName(SOAP_NS, 'Header'))
     sdk_Body = ET.SubElement(sdk_automaticEvent, ET.QName(SOAP_NS, 'Body'))
-    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'automaticEvent'),
+    sdk_create_AE = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'AutomaticEvent'))
+    sdk_create_obj = ET.SubElement(sdk_create_AE, ET.QName(SDK_NS, 'automaticEvent'),
                                    HazardousObjectNumber = Guid_OPO,
                                    RequestGuid = str(uuid.uuid4()),         #Присвоенный ДО номер запроса
                                    Ogrn = '1023001538460',
-                                   EventClass = '1',                   #Справочник «Класс события»
-                                   EventDateTime = nowTZ,            #Дата и время события
-                                   EventStatus = '3'                #Справочник «Текущий статус события» (перечень в разделе 8.3.2)
+                                   EventClass = '3',                        #Справочник «Класс события»
+                                   EventDateTime = str(Event[1]),           #Дата и время события
+                                   EventDescription = str(Event[2]),        #Описание события
+                                   EventStatus = '3'                        #Справочник «Текущий статус события» (перечень в разделе 8.3.2)
                                 )
     xml_str = ET.tostring(sdk_automaticEvent)
     print(xml_str)
@@ -136,14 +138,15 @@ def creat_manualEvent_xml():
     sdk_manualEvent = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
     sdk_Header = ET.SubElement(sdk_manualEvent, ET.QName(SOAP_NS, 'Header'))
     sdk_Body = ET.SubElement(sdk_manualEvent, ET.QName(SOAP_NS, 'Body'))
-    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'manualEvent'),
+    sdk_create_ME = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'ManualEvent'))
+    sdk_create_obj = ET.SubElement(sdk_create_ME, ET.QName(SDK_NS, 'manualEvent'),
                                    HazardousObjectNumber = Guid_OPO,
                                    RequestGuid = str(uuid.uuid4()),         #Присвоенный ДО номер запроса
                                    Ogrn = '1023001538460',
                                    EventClass = '6',                   #Справочник «Класс события»
                                    EventDateTime = nowTZ,            #Дата и время события
                                    EventStatus = '3',                #Справочник «Текущий статус события» (перечень в разделе 8.3.2)
-                                   ID = '1          '                #Фиксированное значение: SIGNED_BY_CONSUMER
+                                   ID = 'SIGNED_BY_CONSUMER'                #Фиксированное значение: SIGNED_BY_CONSUMER
                                 )
     xml_str = ET.tostring(sdk_manualEvent)
     print(xml_str)
@@ -159,21 +162,22 @@ def creat_manualEvent_xml():
 # 8.1.8	Отчет «Оценка интегрального показателя промышленной безопасности за сутки по ОПО»
 # Частота передачи – 1 раз в сутки.
 def creat_opoRoib_xml():
-    # Event = DB_connect.sel_obj(Guid_OPO)
-    # print(Event)
+    opo_Roib = DB_connect.sel_opo_Roib(Guid_OPO)
+    print(opo_Roib)
     now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
     nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   # Вычисление времени с ТЗ для отображения когда произошло событие
     print(nowTZ)
     sdk_opoRoib = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
     sdk_Header = ET.SubElement(sdk_opoRoib, ET.QName(SOAP_NS, 'Header'))
     sdk_Body = ET.SubElement(sdk_opoRoib, ET.QName(SOAP_NS, 'Body'))
-    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'hazardousObjectRoib'),
+    sdk_create_OpoRoib = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'OpoRoib'))
+    sdk_create_obj = ET.SubElement(sdk_create_OpoRoib, ET.QName(SDK_NS, 'hazardousObjectRoib'),
                                    HazardousObjectNumber = Guid_OPO,
                                    RequestGuid = str(uuid.uuid4()),         # Присвоенный ДО номер запроса
                                    Ogrn = '1023001538460',
-                                   ID='1',                           # Фиксированное значение: SIGNED_BY_CONSUMER
-                                   RoibOpoValue = '0.99',            # Значение риск-ориентированного интегрального показателя промышленной безопасности ОПО
-                                   RoibOpoDateTime = nowTZ,          # Дата и время, за которую предоставляются сведения расчета риск-ориентированного интегрального показателя промышленной безопасности ОПО
+                                   ID='SIGNED_BY_CONSUMER',                           # Фиксированное значение: SIGNED_BY_CONSUMER
+                                   RoibOpoValue = str(opo_Roib[0]),            # Значение риск-ориентированного интегрального показателя промышленной безопасности ОПО
+                                   RoibOpoDateTime = str(opo_Roib[1]),         # Дата и время, за которую предоставляются сведения расчета риск-ориентированного интегрального показателя промышленной безопасности ОПО
                                   )
     xml_str = ET.tostring(sdk_opoRoib)
     print(xml_str)
