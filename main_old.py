@@ -6,6 +6,8 @@
 import os, sys
 import xml.etree.ElementTree as ET
 import uuid
+import datetime
+from datetime import timezone, timedelta
 from DB import DB_connect
 
 import requests
@@ -22,6 +24,7 @@ Guid_OPO = '9A65966D-BFB7-45AA-A7A8-D9B3C0CF9868'
 # Сщздание XML ОПО описание и внесение в БД РТН
 def creat_opo_xml():
     OPO = DB_connect.Sel_OPO(Guid_OPO)
+    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
     sdk_record = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
     sdk_Header = ET.SubElement(sdk_record, ET.QName(SOAP_NS, 'Header'))
     sdk_Body = ET.SubElement(sdk_record, ET.QName(SOAP_NS, 'Body'))
@@ -40,21 +43,21 @@ def creat_opo_xml():
                                            LimitIrNormal = '0.6',
                                            LimitIrHigh = '0.8',
                                            LimitIrMax = '1.0')
-    # sdk_HazardousObjects = ET.SubElement(sdk_NewHazardousObject, 'sdk:HazardousObject')
     xml_str = ET.tostring(sdk_record)
-    # ET.C14NWriterTarget('country_data.xml')
     print(xml_str)
     tree = ET.ElementTree(sdk_record)
     try:
-        tree.write('NewHazardousObject.xml', "UTF-8")
+        tree.write('out/NewHazardousObject_' + now + '.xml', "UTF-8")
     except EnvironmentError as err:
             print("{0}: import error: {1}".format(
             os.path.basename(sys.argv[0]), err))
             return False
     return True
 
+# Создание XML Элемента ОПО описание и внесение в БД РТН
 def creat_obj_xml():
     Obj = DB_connect.sel_obj(Guid_OPO)
+    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
     print(Obj)
     sdk_obj = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
     sdk_Header = ET.SubElement(sdk_obj, ET.QName(SOAP_NS, 'Header'))
@@ -78,7 +81,105 @@ def creat_obj_xml():
     print(xml_str)
     tree = ET.ElementTree(sdk_obj)
     try:
-        tree.write('NewInstallation.xml', "UTF-8")
+        tree.write('out/NewInstallation_' + now + '.xml', "UTF-8")
+    except EnvironmentError as err:
+            print("{0}: import error: {1}".format(
+            os.path.basename(sys.argv[0]), err))
+            return False
+    return True
+
+# Создание   8.1.6	Отчет «События промышленной безопасности, зафиксированные автоматически» для РТН
+# Частота передачи:
+# -	по событиям С1-С2 – при фиксации события или смене статуса события;
+# -	по событиям С3 – при фиксации события или смене статуса события;
+# -	по событиям С4 – не передается в рамках данного метода.
+def creat_automaticEvent_xml():
+    # Event = DB_connect.sel_obj(Guid_OPO)
+    # print(Event)
+    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+    nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   #Вычисление времени с ТЗ для отображения когда произошло событие
+    print(nowTZ)
+    sdk_automaticEvent = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
+    sdk_Header = ET.SubElement(sdk_automaticEvent, ET.QName(SOAP_NS, 'Header'))
+    sdk_Body = ET.SubElement(sdk_automaticEvent, ET.QName(SOAP_NS, 'Body'))
+    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'automaticEvent'),
+                                   HazardousObjectNumber = Guid_OPO,
+                                   RequestGuid = str(uuid.uuid4()),         #Присвоенный ДО номер запроса
+                                   Ogrn = '1023001538460',
+                                   EventClass = '1',                   #Справочник «Класс события»
+                                   EventDateTime = nowTZ,            #Дата и время события
+                                   EventStatus = '3'                #Справочник «Текущий статус события» (перечень в разделе 8.3.2)
+                                )
+    xml_str = ET.tostring(sdk_automaticEvent)
+    print(xml_str)
+    tree = ET.ElementTree(sdk_automaticEvent)
+    try:
+            tree.write('out/automaticEvent_' + now + '.xml', "UTF-8")
+    except EnvironmentError as err:
+            print("{0}: import error: {1}".format(
+            os.path.basename(sys.argv[0]), err))
+            return False
+    return True
+
+# 8.1.7	Отчет «События промышленной безопасности, зафиксированные вручную»
+# Частота передачи:
+# -	по событиям Е1-Е2 – при фиксации события или смене статуса события;
+# -	по событиям Е3 – при фиксации события или смене статуса события;
+# -	по событиям Е4 – не передается в рамках данного метода (передается в рамках метода EventsQD).
+
+def creat_manualEvent_xml():
+    # Event = DB_connect.sel_obj(Guid_OPO)
+    # print(Event)
+    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+    nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   #Вычисление времени с ТЗ для отображения когда произошло событие
+    print(nowTZ)
+    sdk_manualEvent = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
+    sdk_Header = ET.SubElement(sdk_manualEvent, ET.QName(SOAP_NS, 'Header'))
+    sdk_Body = ET.SubElement(sdk_manualEvent, ET.QName(SOAP_NS, 'Body'))
+    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'manualEvent'),
+                                   HazardousObjectNumber = Guid_OPO,
+                                   RequestGuid = str(uuid.uuid4()),         #Присвоенный ДО номер запроса
+                                   Ogrn = '1023001538460',
+                                   EventClass = '6',                   #Справочник «Класс события»
+                                   EventDateTime = nowTZ,            #Дата и время события
+                                   EventStatus = '3',                #Справочник «Текущий статус события» (перечень в разделе 8.3.2)
+                                   ID = '1          '                #Фиксированное значение: SIGNED_BY_CONSUMER
+                                )
+    xml_str = ET.tostring(sdk_manualEvent)
+    print(xml_str)
+    tree = ET.ElementTree(sdk_manualEvent)
+    try:
+            tree.write('out/manualEvent_' + now + '.xml', "UTF-8")
+    except EnvironmentError as err:
+            print("{0}: import error: {1}".format(
+            os.path.basename(sys.argv[0]), err))
+            return False
+    return True
+
+# 8.1.8	Отчет «Оценка интегрального показателя промышленной безопасности за сутки по ОПО»
+# Частота передачи – 1 раз в сутки.
+def creat_opoRoib_xml():
+    # Event = DB_connect.sel_obj(Guid_OPO)
+    # print(Event)
+    now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+    nowTZ = str(datetime.datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=2))))   # Вычисление времени с ТЗ для отображения когда произошло событие
+    print(nowTZ)
+    sdk_opoRoib = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
+    sdk_Header = ET.SubElement(sdk_opoRoib, ET.QName(SOAP_NS, 'Header'))
+    sdk_Body = ET.SubElement(sdk_opoRoib, ET.QName(SOAP_NS, 'Body'))
+    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'hazardousObjectRoib'),
+                                   HazardousObjectNumber = Guid_OPO,
+                                   RequestGuid = str(uuid.uuid4()),         # Присвоенный ДО номер запроса
+                                   Ogrn = '1023001538460',
+                                   ID='1',                           # Фиксированное значение: SIGNED_BY_CONSUMER
+                                   RoibOpoValue = '0.99',            # Значение риск-ориентированного интегрального показателя промышленной безопасности ОПО
+                                   RoibOpoDateTime = nowTZ,          # Дата и время, за которую предоставляются сведения расчета риск-ориентированного интегрального показателя промышленной безопасности ОПО
+                                  )
+    xml_str = ET.tostring(sdk_opoRoib)
+    print(xml_str)
+    tree = ET.ElementTree(sdk_opoRoib)
+    try:
+            tree.write('out/opoRoib_' + now + '.xml', "UTF-8")
     except EnvironmentError as err:
             print("{0}: import error: {1}".format(
             os.path.basename(sys.argv[0]), err))
@@ -86,10 +187,12 @@ def creat_obj_xml():
     return True
 
 
-
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     creat_opo_xml()
     creat_obj_xml()
+    creat_automaticEvent_xml()
+    creat_manualEvent_xml()
+    creat_opoRoib_xml()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
