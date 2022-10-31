@@ -10,8 +10,6 @@ import datetime
 from datetime import timezone, timedelta
 from DB import DB_connect
 
-import requests
-from xml.etree import ElementTree
 
 SOAP_NS = 'http://schemas.xmlsoap.org/soap/envelope/'
 SDK_NS = 'sdkrtn'
@@ -23,19 +21,17 @@ Guid_OPO = '9A65966D-BFB7-45AA-A7A8-D9B3C0CF9868'
 
 # Сщздание XML ОПО описание и внесение в БД РТН
 def creat_opo_xml():
-    OPO = DB_connect.Sel_OPO(Guid_OPO)
+    OPO = DB_connect.Sel_OPO()
     now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
-    sdk_record = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
-    sdk_Header = ET.SubElement(sdk_record, ET.QName(SOAP_NS, 'Header'))
-    sdk_Body = ET.SubElement(sdk_record, ET.QName(SOAP_NS, 'Body'))
-    sdk_create_opo = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'NewHazardousObject'),
+    sdk_record = ET.Element('NewHazardousObject',
                                    Organization = 'faebb331-1927-491f-9635-64f1f1b5cd54')
-                                   # Organization = str(uuid.uuid4()))
-    sdk_NewHazardousObject = ET.SubElement(sdk_create_opo, ET.QName(SDK_NS, 'HazardousObjects'),
-                                           Name = str(OPO[5]),
-                                           GuidOPO = str(OPO[9]),
-                                           LaunchDate = str(OPO[3]),
-                                           PbRegNum = str(OPO[2]),
+    sdk_HazardousObjects = ET.SubElement(sdk_record,'HazardousObjects')
+    for row in OPO:
+        sdk_NewHazardousObject = ET.SubElement(sdk_HazardousObjects, 'HazardousObject',
+                                           Name = str(row[5]),
+                                           GuidOPO = str(row[9]),
+                                           LaunchDate = str(row[3]),
+                                           PbRegNum = str(row[2]),
                                            PbIssueDate = '2019-10-19',
                                            PbValidUntil = '2023-10-19',
                                            PbState = '1',
@@ -58,15 +54,11 @@ def creat_opo_xml():
 def creat_obj_xml():
     Obj = DB_connect.sel_obj(Guid_OPO)
     now = str(datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
-    print(Obj)
-    sdk_obj = ET.Element(ET.QName(SOAP_NS, 'Envelope'))
-    sdk_Header = ET.SubElement(sdk_obj, ET.QName(SOAP_NS, 'Header'))
-    sdk_Body = ET.SubElement(sdk_obj, ET.QName(SOAP_NS, 'Body'))
-    sdk_create_obj = ET.SubElement(sdk_Body, ET.QName(SDK_NS, 'NewInstallation'),
+    sdk_create_obj = ET.Element('NewInstallation',
                                    GuidOPO = Guid_OPO,
                                    Organization = 'faebb331-1927-491f-9635-64f1f1b5cd54')
-                                   # Organization = str(uuid.uuid4()))
-    sdk_NewHazardousObject = ET.SubElement(sdk_create_obj, ET.QName(SDK_NS, 'Installations'),
+    sdk_Installations = ET.SubElement(sdk_create_obj, 'Installations')
+    sdk_Installation = ET.SubElement(sdk_Installations, 'Installation',
                                             Name = str(Obj[1]),
                                             Guid = str(Obj[10]),
                                             LimitIrLow = '1',
@@ -77,9 +69,7 @@ def creat_obj_xml():
                                             limitTrendHigh='0.8',
                                             limitTrendMax='0.6',
                                            )
-    xml_str = ET.tostring(sdk_obj)
-    print(xml_str)
-    tree = ET.ElementTree(sdk_obj)
+    tree = ET.ElementTree(sdk_create_obj)
     try:
         tree.write('out/NewInstallation_' + now + '.xml', "UTF-8")
     except EnvironmentError as err:

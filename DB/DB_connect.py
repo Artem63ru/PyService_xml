@@ -5,13 +5,14 @@ def connect_DB():
     conn = psycopg2.connect(dbname='statick', user='postgres',
                         password='Potok-DU', host='192.168.56.102')
     return conn
-def Sel_OPO(guid_opo):
-    sql = 'SELECT t.* FROM public.ref_opo t where t.guid = ' + "'" + str(guid_opo) + "'"
+def Sel_OPO():
+    # sql = 'SELECT t.* FROM public.ref_opo t where t.guid = ' + "'" + str(guid_opo) + "'"
+    sql = 'SELECT t.* FROM public.ref_opo t limit 1'
     connect = connect_DB()
     cursor = connect.cursor()
     cursor.execute(sql)
-    for row in cursor:
-     return row
+    # for row in cursor:
+    return cursor
 # Выбор объекта для занесения в НСИ
 def sel_obj(guid_opo):
     sql = 'SELECT o.* FROM public.ref_obj o where o."idOPO" = (SELECT t."idOPO" FROM public.ref_opo t where t.guid = '\
